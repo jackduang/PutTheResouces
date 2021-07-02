@@ -1,0 +1,119 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+public enum Dir
+{
+   Left ,Down,Up,Right
+}
+public class Model
+{
+   public  Dictionary<Dir, List<TileBase>> Dic_DirTiles = new Dictionary<Dir, List<TileBase>>();
+    public Model()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            Dic_DirTiles.Add((Dir)i, new List<TileBase>());
+        }
+    }
+}
+
+public class Main : MonoBehaviour
+{
+    // Start is called before the first frame update
+
+    public Grid grid;
+    public BoundsInt bounds;
+    public Tilemap tilemap;
+     Dictionary<TileBase, Model> TileInfor = new Dictionary<TileBase, Model>();
+    private void Awake()
+    {
+    }
+    void Start()
+    {
+        InitTilesInfor();
+        print(TileInfor.Count);
+        foreach (var item in TileInfor)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                print("Tile::"+item.Key+(Dir)i+"::"+item.Value.Dic_DirTiles[(Dir)i].Count);
+                foreach (var item2 in item.Value.Dic_DirTiles[(Dir)i])
+                {
+                    print("222   "+item2);
+                }
+            }
+            print("=====================================");
+        }
+    }
+
+    void InitTilesInfor()
+    {
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                if (!tilemap.HasTile(pos))
+                {
+                    continue;
+                }
+                TileBase tile = tilemap.GetTile(pos);
+                
+                if (!TileInfor.ContainsKey(tile)){
+                    TileInfor.Add(tile, new Model());
+                }
+                GetRoundTile(tile,pos);
+                
+            }
+        }
+       
+    }
+
+    public void GetRoundTile(TileBase ForTile,Vector3Int pos)
+    {
+        int dirIndex = 0;
+        for (int x = pos.x-1; x <= pos.x+1; x++)
+        {
+            for (int y = pos.y-1; y <= pos.y+1; y++)
+            {
+                Vector3Int curPos = new Vector3Int(x, y, pos.z);
+                if (curPos == pos)
+                    continue;
+                if (x != pos.x && y != pos.y)
+                {
+                    continue;
+                }
+                
+                TileBase tile = tilemap.GetTile(curPos);
+                if (!tilemap.HasTile(curPos))
+                    continue;
+                if (!TileInfor.ContainsKey(tile))
+                    TileInfor.Add(tile, new Model());
+                    
+                List<TileBase> List_dirTiles = TileInfor[ForTile].Dic_DirTiles[(Dir)dirIndex];
+                if (List_dirTiles.Contains(tile)){
+                    print("con");
+                    continue;
+                }
+                    
+                List_dirTiles.Add(tile);
+                dirIndex++;
+               // print((Dir)dirIndex+"::"+List_dirTiles.Count);
+            }
+        }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+    private void OnDrawGizmos()
+    {
+        bounds.position = new Vector3Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt((int)transform.position.y), Mathf.RoundToInt((int)transform.position.z));
+        foreach (var item in bounds.allPositionsWithin)
+        {
+            Gizmos.DrawWireCube(item, new Vector3Int(1, 1, 1));
+        }
+    }
+}
