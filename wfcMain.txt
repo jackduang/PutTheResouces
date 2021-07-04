@@ -2,15 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using TMPro;
+using System.Linq;
 public enum Dir
 {
-   Left ,Down,Up,Right
+    Left, Down, Up, Right
 }
-public class Model
+public class ModelRulesInfor
 {
-   public  Dictionary<Dir, List<TileBase>> Dic_DirTiles = new Dictionary<Dir, List<TileBase>>();
-    public Model()
+    public Dictionary<Dir, List<TileBase>> Dic_DirTiles;
+    public ModelRulesInfor()
     {
+        Dic_DirTiles = new Dictionary<Dir, List<TileBase>>();
         for (int i = 0; i < 4; i++)
         {
             Dic_DirTiles.Add((Dir)i, new List<TileBase>());
@@ -18,95 +21,238 @@ public class Model
     }
 }
 
+public class Model
+{
+    public Vector3Int pos;
+
+    public bool IsCollapse = false;
+    public TileBase[] CurTiles;
+
+    Main main;
+    // Dictionary<TileBase, ModelRulesInfor> alltilesRules;
+    public Model(Vector3Int pos)
+    {
+        //alltilesRules = AllTilesRules;
+
+        main = Main.instance;
+        CurTiles = new TileBase[main.TileInfor.Keys.Count];
+        this.pos = pos;
+        int index = 0;
+        foreach (var item in main.TileInfor.Keys)
+        {
+
+            CurTiles[index] = item;
+            index++;
+        }
+    }
+
+    //坍缩周围格子
+    public void CollapseRoundTiles()
+    {
+        if (CurTiles.Length <= 0)
+        {
+            Debug.Log("当前格子瓷砖为空");
+            return;
+        }
+        int dirIndex = -1;
+        for (int x = pos.x - 1; x <= pos.x + 1; x++)
+        {
+            for (int y = pos.y - 1; y <= pos.y + 1; y++)
+            {
+                Vector3Int curPos = new Vector3Int(x, y, pos.z);
+                if ((x != pos.x && y != pos.y) || (curPos == pos))
+                {
+                    continue;
+                }
+                dirIndex++;
+                //更新周围格子的重叠的瓷砖表
+
+                //获取这个方向上的瓷砖表
+                TileBase[] RoundGirdCurTiles = main.Models[curPos].CurTiles;
+                List<TileBase> dirTiles = new List<TileBase>();
+                foreach (var item in CurTiles)
+                {
+                    //获取Tile规则表
+                    if (item == null)
+                    {
+                        continue;
+                    }
+                    List<TileBase> dirtileTemp = main.TileInfor[item].Dic_DirTiles[(Dir)dirIndex];
+                    //Debug.Log("+dirtileTemp.Count);
+                    /*  foreach (var item2 in dirtileTemp)
+                     {
+                         if (!dirTiles.Contains(item2))
+                         {
+
+                         }
+                     } */
+                    dirTiles.AddRange(dirtileTemp.Where(x =>
+                    {
+                        if (!dirTiles.Contains(x))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    ));
+
+
+                }
+                Debug.Log("GridAllTilesCount::" + dirTiles.Count);
+                for (int i = 0; i < RoundGirdCurTiles.Length; i++)
+                {
+                    TileBase item2 = RoundGirdCurTiles[i];
+                    if (dirTiles.Contains(item2))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        RoundGirdCurTiles[i] = null;
+                    }
+                }
+                foreach (var item in RoundGirdCurTiles)
+                {
+                    Debug.Log("GridAllTiles::" + (Dir)dirIndex + "::" + item);
+                }
+                // Debug.Log((Dir)dirIndex + "::" + RoundGirdCurTiles.Count);
+                dirTiles.Clear();
+            }
+        }
+    }
+}
+
 public class Main : MonoBehaviour
 {
     // Start is called before the first frame update
-
+    public GameObject text;
     public Grid grid;
     public BoundsInt bounds;
     public Tilemap tilemap;
-     Dictionary<TileBase, Model> TileInfor = new Dictionary<TileBase, Model>();
+    public Dictionary<TileBase, ModelRulesInfor> TileInfor = new Dictionary<TileBase, ModelRulesInfor>();
+    public Dictionary<Vector3Int, Model> Models = new Dictionary<Vector3Int, Model>();
+
+    public static Main instance;
+
     private void Awake()
     {
+        instance = this;
+
     }
     void Start()
     {
         InitTilesInfor();
-        print(TileInfor.Count);
-        foreach (var item in TileInfor)
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                print("Tile::"+item.Key+(Dir)i+"::"+item.Value.Dic_DirTiles[(Dir)i].Count);
-                foreach (var item2 in item.Value.Dic_DirTiles[(Dir)i])
-                {
-                    print("222   "+item2);
-                }
-            }
-            print("=====================================");
-        }
     }
 
     void InitTilesInfor()
+    {
+        InitModeRules();
+
+        InitMode();
+    }
+    public void InitMode()
     {
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
                 Vector3Int pos = new Vector3Int(x, y, 0);
+                Models.Add(pos, new Model(pos));
+            }
+        }
+
+    }
+
+    //初始化瓷砖邻居规则信息
+    public void InitModeRules()
+    {
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                Vector3 CellPos = tilemap.CellToWorld(pos);
+                GameObject TMP_textOBJ = Instantiate(text, CellPos, Quaternion.identity, transform.Find("Canvas/texts"));
+                TMP_textOBJ.GetComponent<TMP_Text>().text = pos.ToString();
                 if (!tilemap.HasTile(pos))
                 {
                     continue;
                 }
                 TileBase tile = tilemap.GetTile(pos);
-                
-                if (!TileInfor.ContainsKey(tile)){
-                    TileInfor.Add(tile, new Model());
+                if (!TileInfor.ContainsKey(tile))
+                {
+                    TileInfor.Add(tile, new ModelRulesInfor());
                 }
-                GetRoundTile(tile,pos);
-                
+                GetRoundTile(tile, pos);
+
+
             }
         }
-       
+
+
     }
 
-    public void GetRoundTile(TileBase ForTile,Vector3Int pos)
+    public void GetRoundTile(TileBase ForTile, Vector3Int pos)
     {
-        int dirIndex = 0;
-        for (int x = pos.x-1; x <= pos.x+1; x++)
+        int dirIndex = -1;
+        for (int x = pos.x - 1; x <= pos.x + 1; x++)
         {
-            for (int y = pos.y-1; y <= pos.y+1; y++)
+            for (int y = pos.y - 1; y <= pos.y + 1; y++)
             {
                 Vector3Int curPos = new Vector3Int(x, y, pos.z);
-                if (curPos == pos)
-                    continue;
-                if (x != pos.x && y != pos.y)
+                if ((x != pos.x && y != pos.y) || (curPos == pos))
                 {
                     continue;
                 }
-                
-                TileBase tile = tilemap.GetTile(curPos);
+                dirIndex++;
+                // print("AddPos:"+curPos);
                 if (!tilemap.HasTile(curPos))
                     continue;
+                TileBase tile = tilemap.GetTile(curPos);
                 if (!TileInfor.ContainsKey(tile))
-                    TileInfor.Add(tile, new Model());
-                    
+                    TileInfor.Add(tile, new ModelRulesInfor());
+
                 List<TileBase> List_dirTiles = TileInfor[ForTile].Dic_DirTiles[(Dir)dirIndex];
-                if (List_dirTiles.Contains(tile)){
-                    print("con");
+                if (List_dirTiles.Contains(tile))
+                {
                     continue;
                 }
-                    
                 List_dirTiles.Add(tile);
-                dirIndex++;
-               // print((Dir)dirIndex+"::"+List_dirTiles.Count);
+
             }
         }
     }
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButtonDown(0))
+        {
+            Vector3 mousepos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector3Int CellPos = tilemap.WorldToCell(mousepos);
+            if (!Models.ContainsKey(CellPos))
+            {
+                print("no");
+                return;
+            }
+            // Debug.Log( Models[CellPos].CurTiles.Count);
+            for (int i = 0; i < Models[CellPos].CurTiles.Length; i++)
+            {
+                if (i < Models[CellPos].CurTiles.Length-5)
+                {
+                    Models[CellPos].CurTiles[i] = null;
+                }
+
+            }
+           // Debug.Log(tilemap.GetTile(CellPos));
+
+            Models[CellPos].CollapseRoundTiles();
+
+
+
+        }
     }
     private void OnDrawGizmos()
     {
