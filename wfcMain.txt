@@ -4,9 +4,13 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using TMPro;
 using System.Linq;
+
+//先观察熵的最小值，再对其进行坍缩
+
+namespace MyWfcTest { 
 public enum Dir
 {
-    Left, Down, Up, Right
+    Left = 0, Down =1, Up =2 , Right =3
 }
 public class ModelRulesInfor
 {
@@ -27,6 +31,7 @@ public class Model
 
     public bool IsCollapse = false;
     public TileBase[] CurTiles;
+    public int Entropy = 0;
 
     Main main;
     // Dictionary<TileBase, ModelRulesInfor> alltilesRules;
@@ -46,82 +51,95 @@ public class Model
         }
     }
 
+    public void FindMinEntropy(Vector3Int[] RoundPos)
+    {
+        List<Model> models = new List<Model>();
+        for (int i = 0; i < RoundPos.Length; i++)
+        {
+            Vector3Int curpos = RoundPos[i];
+            Model RoundModle = main.Models[curpos];
+            models.Add(RoundModle);
+            foreach (var item in RoundModle.CurTiles)
+            {
+                if (item != null)
+                    RoundModle.Entropy++;
+
+            }
+            
+        }
+
+        //得到熵最小的
+        models.Sort((a,b) =>
+        {
+          return  a.Entropy.CompareTo(b.Entropy);
+
+        });
+        if (models[0].Entropy == 0)
+        {
+            models.RemoveAt(0);
+        }
+        models[0].CollapseRoundTiles();
+    }
+
     //坍缩周围格子
     public void CollapseRoundTiles()
     {
-        if (CurTiles.Length <= 0)
+        if (CurTiles == null||CurTiles.Length <= 0)
         {
             Debug.Log("当前格子瓷砖为空");
             return;
         }
-        int dirIndex = -1;
-        for (int x = pos.x - 1; x <= pos.x + 1; x++)
+        Vector3Int[] RoundPos = main.GetRoundPos(pos);
+        
+        for (int j = 0; j < RoundPos.Length; j++)
         {
-            for (int y = pos.y - 1; y <= pos.y + 1; y++)
+            Vector3Int curPos = RoundPos[j];
+            if (!main.Models.ContainsKey(curPos))
+                continue;
+            TileBase[] RoundGirdCurTiles = main.Models[curPos].CurTiles;
+            HashSet<TileBase> dirTiles = new HashSet<TileBase>();
+            foreach (var item in CurTiles)
             {
-                Vector3Int curPos = new Vector3Int(x, y, pos.z);
-                if ((x != pos.x && y != pos.y) || (curPos == pos))
+                //获取Tile规则表
+                if (item == null)
                 {
                     continue;
                 }
-                dirIndex++;
-                //更新周围格子的重叠的瓷砖表
+                List<TileBase> dirtileTemp = main.TileInfor[item].Dic_DirTiles[(Dir)j];
 
-                //获取这个方向上的瓷砖表
-                TileBase[] RoundGirdCurTiles = main.Models[curPos].CurTiles;
-                List<TileBase> dirTiles = new List<TileBase>();
-                foreach (var item in CurTiles)
+                foreach (var item2 in dirtileTemp)
                 {
-                    //获取Tile规则表
-                    if (item == null)
-                    {
-                        continue;
-                    }
-                    List<TileBase> dirtileTemp = main.TileInfor[item].Dic_DirTiles[(Dir)dirIndex];
-                    //Debug.Log("+dirtileTemp.Count);
-                    /*  foreach (var item2 in dirtileTemp)
-                     {
-                         if (!dirTiles.Contains(item2))
-                         {
-
-                         }
-                     } */
-                    dirTiles.AddRange(dirtileTemp.Where(x =>
-                    {
-                        if (!dirTiles.Contains(x))
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
-                    }
-                    ));
+                    dirTiles.Add(item2);
+                }
 
 
-                }
-                Debug.Log("GridAllTilesCount::" + dirTiles.Count);
-                for (int i = 0; i < RoundGirdCurTiles.Length; i++)
-                {
-                    TileBase item2 = RoundGirdCurTiles[i];
-                    if (dirTiles.Contains(item2))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        RoundGirdCurTiles[i] = null;
-                    }
-                }
-                foreach (var item in RoundGirdCurTiles)
-                {
-                    Debug.Log("GridAllTiles::" + (Dir)dirIndex + "::" + item);
-                }
-                // Debug.Log((Dir)dirIndex + "::" + RoundGirdCurTiles.Count);
-                dirTiles.Clear();
+
             }
+            Debug.Log("GridAllTilesCount::" + dirTiles.Count);
+            for (int i = 0; i < RoundGirdCurTiles.Length; i++)
+            {
+                TileBase item2 = RoundGirdCurTiles[i];
+                if (dirTiles.Contains(item2))
+                {
+                    continue;
+                }
+                else
+                {
+                    RoundGirdCurTiles[i] = null;
+                }
+            }
+            dirTiles.Clear();
+            int notNullIndex = 0;
+            foreach (var item in RoundGirdCurTiles)
+            {
+                if (item != null)
+                    notNullIndex++;
+
+            }
+            main.GetMapText(curPos, Color.red, notNullIndex.ToString());
+            FindMinEntropy(RoundPos);
         }
+       
     }
 }
 
@@ -153,7 +171,7 @@ public class Main : MonoBehaviour
 
         InitMode();
     }
-    public void InitMode()
+     void InitMode()
     {
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
@@ -167,7 +185,7 @@ public class Main : MonoBehaviour
     }
 
     //初始化瓷砖邻居规则信息
-    public void InitModeRules()
+     void InitModeRules()
     {
         for (int x = bounds.xMin; x < bounds.xMax; x++)
         {
@@ -176,6 +194,7 @@ public class Main : MonoBehaviour
                 Vector3Int pos = new Vector3Int(x, y, 0);
                 Vector3 CellPos = tilemap.CellToWorld(pos);
                 GameObject TMP_textOBJ = Instantiate(text, CellPos, Quaternion.identity, transform.Find("Canvas/texts"));
+                TMP_textOBJ.name = pos.ToString();
                 TMP_textOBJ.GetComponent<TMP_Text>().text = pos.ToString();
                 if (!tilemap.HasTile(pos))
                 {
@@ -195,34 +214,24 @@ public class Main : MonoBehaviour
 
     }
 
-    public void GetRoundTile(TileBase ForTile, Vector3Int pos)
+     void GetRoundTile(TileBase ForTile, Vector3Int pos)
     {
-        int dirIndex = -1;
-        for (int x = pos.x - 1; x <= pos.x + 1; x++)
+        Vector3Int[] RoundPos = GetRoundPos(pos);
+        for (int i = 0; i < RoundPos.Length; i++)
         {
-            for (int y = pos.y - 1; y <= pos.y + 1; y++)
+            Vector3Int curPos = RoundPos[i];
+            if (!tilemap.HasTile(curPos))
+                continue;
+            TileBase tile = tilemap.GetTile(curPos);
+            if (!TileInfor.ContainsKey(tile))
+                TileInfor.Add(tile, new ModelRulesInfor());
+
+            List<TileBase> List_dirTiles = TileInfor[ForTile].Dic_DirTiles[(Dir)i];
+            if (List_dirTiles.Contains(tile))
             {
-                Vector3Int curPos = new Vector3Int(x, y, pos.z);
-                if ((x != pos.x && y != pos.y) || (curPos == pos))
-                {
-                    continue;
-                }
-                dirIndex++;
-                // print("AddPos:"+curPos);
-                if (!tilemap.HasTile(curPos))
-                    continue;
-                TileBase tile = tilemap.GetTile(curPos);
-                if (!TileInfor.ContainsKey(tile))
-                    TileInfor.Add(tile, new ModelRulesInfor());
-
-                List<TileBase> List_dirTiles = TileInfor[ForTile].Dic_DirTiles[(Dir)dirIndex];
-                if (List_dirTiles.Contains(tile))
-                {
-                    continue;
-                }
-                List_dirTiles.Add(tile);
-
+                continue;
             }
+            List_dirTiles.Add(tile);
         }
     }
     // Update is called once per frame
@@ -240,19 +249,47 @@ public class Main : MonoBehaviour
             // Debug.Log( Models[CellPos].CurTiles.Count);
             for (int i = 0; i < Models[CellPos].CurTiles.Length; i++)
             {
-                if (i < Models[CellPos].CurTiles.Length-5)
+                if (i < Models[CellPos].CurTiles.Length - 1)
                 {
                     Models[CellPos].CurTiles[i] = null;
                 }
 
             }
-           // Debug.Log(tilemap.GetTile(CellPos));
+            // Debug.Log(tilemap.GetTile(CellPos));
 
             Models[CellPos].CollapseRoundTiles();
 
 
 
         }
+    }
+
+    public Vector3Int[] GetRoundPos(Vector3Int pos)
+    {
+        Vector3Int[] Roundpos = new Vector3Int[4];
+        int index = 0;
+        for (int x = pos.x - 1; x <= pos.x + 1; x++)
+        {
+            for (int y = pos.y - 1; y <= pos.y + 1; y++)
+            {
+                Vector3Int curPos = new Vector3Int(x, y, pos.z);
+                if ((x != pos.x && y != pos.y) || (curPos == pos))
+                {
+                    continue;
+                }
+                Roundpos[index] = curPos;
+                index++;
+            }
+
+        }
+        return Roundpos;
+    }
+
+    public void GetMapText(Vector3Int pos ,Color color,string text)
+    {
+        TextMeshProUGUI textUGUI = GameObject.Find(pos.ToString()).GetComponent<TextMeshProUGUI>();
+        textUGUI.color = color;
+        textUGUI.text = text;
     }
     private void OnDrawGizmos()
     {
@@ -262,4 +299,5 @@ public class Main : MonoBehaviour
             Gizmos.DrawWireCube(item, new Vector3Int(1, 1, 1));
         }
     }
+}
 }
