@@ -31,9 +31,9 @@ public class NoiseGenerate
                     noiseMap[x, y] += wave.amplitude * Mathf.PerlinNoise(samplePosX * wave.frequency + wave.seed, samplePosY * wave.frequency + wave.seed);
                     normalization += wave.amplitude;
                     noiseMap[x, y] /= normalization;
-                    normalization += wave.amplitude;
+                    //normalization += wave.amplitude;
                 }
-                noiseMap[x, y] /= normalization;
+               // noiseMap[x, y] /= normalization;
             }
         }
         return noiseMap;

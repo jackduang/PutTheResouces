@@ -7,12 +7,11 @@ using UnityEngine.Tilemaps;
 public class NoiseMap : MonoBehaviour
 {
     public Biochemical[] bios;
-    public GameObject tilePre;
 
     public int MapW = 50,MapH = 50;
     public float scale = 1f;
     public Vector2 offset;
-    public Tilemap tile;
+    public Tilemap tileMap;
 
     [Header("Height Map")]
     public Wave[] heightWaves;
@@ -23,7 +22,12 @@ public class NoiseMap : MonoBehaviour
     [Header("Heat Map")]
     public Wave[] heatWaves;
     private float[,] heatMap;
+    Tile tile;
     // Start is called before the first frame update
+    private void Awake()
+    {
+        
+    }
     void Start()
     {
         GenerateMap();
@@ -32,10 +36,8 @@ public class NoiseMap : MonoBehaviour
     [Button("GenerateMap")]
     void GenerateMap()
     {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            transform.GetChild(i).
-        }
+        tileMap.ClearAllTiles();
+        tile = (Tile)Resources.Load<TileBase>("Tile");
         // height map
         heightMap = NoiseGenerate.Generate(MapW, MapH, scale,offset,heightWaves);
         // moisture map
@@ -46,15 +48,21 @@ public class NoiseMap : MonoBehaviour
         {
             for (int y = 0; y < MapH; ++y)
             {
-               // GameObject tile = Instantiate(tilePre, new Vector3(x, y, 0), Quaternion.identity,transform);
+                // GameObject tile = Instantiate(tilePre, new Vector3(x, y, 0), Quaternion.identity,transform);
+                Vector3Int tilepos = tileMap.WorldToCell(new Vector3Int(x, y, 1));
+                
                 Sprite spr = GetBiome(heightMap[x, y], moistureMap[x, y], heatMap[x, y]).GetTleSprite();
-                if (spr != null)
-                {
-                    tile.GetComponent<SpriteRenderer>().sprite = spr;
-                }
+                tile.sprite = spr;
+                tileMap.SetTile(tilepos, tile);
                 
             }
         }
+    }
+
+    [Button("CleanMap")]
+    void CleanMap()
+    {
+        tileMap.ClearAllTiles();
     }
 
     //决定生成哪个群落
