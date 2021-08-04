@@ -2,25 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using UnityEngine.Tilemaps;
 
-[CreateAssetMenu(fileName = "Surroundings",menuName = "´´½¨ÈºÂä")]
+[CreateAssetMenu(fileName = "Surroundings",menuName = "åˆ›å»ºç¾¤è½")]
 public class Biochemical : ScriptableObject
 {
-    public Sprite[] tiles;
+    public Sprite[] spr;
+
+    public TileBase tile;
     public float minHeight;
     public float minMoisture;
     public float minHeat;
     /// <summary>
-    ///Ëæ»ú»ñÈ¡tileÍ¼Æ¬
+    ///éšæœºè·å–tileå›¾ç‰‡
     /// </summary>
     /// <returns></returns>
     public Sprite GetTleSprite()
     {
-        return tiles[Random.Range(0, tiles.Length)];
+        return spr[Random.Range(0, spr.Length)];
     }
 
     /// <summary>
-    /// ¿´µ±Ç°ÉúÎïÈºÂäÊÇ·ñ·ûºÏ»·¾³
+    /// çœ‹å½“å‰ç”Ÿç‰©ç¾¤è½æ˜¯å¦ç¬¦åˆç¯å¢ƒ
     /// </summary>
     /// <param name="height"></param>
     /// <param name="moisture"></param>

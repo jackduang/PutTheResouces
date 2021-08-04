@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b40b4a9dfa8df5b449d279d3c9ffc42f, type: 3}
-  m_Name: Surr_Ocean
+  m_Name: Surr_sandbeach
   m_EditorClassIdentifier: Assembly-CSharp::Biochemical
-  spr: []
-  tile: {fileID: 11400000, guid: ee8ac603ec46cd541882d938047e5940, type: 2}
-  minHeight: -999
-  minMoisture: -999
-  minHeat: -999
+  spr:
+  - {fileID: 5869032286109337591, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
+  tile: {fileID: 11400000, guid: 9cc98fa4f3548d1498a1e51e228ed362, type: 2}
+  minHeight: 0.5
+  minMoisture: 0
+  minHeat: 0
