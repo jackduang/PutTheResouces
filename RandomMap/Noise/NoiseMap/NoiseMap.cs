@@ -92,7 +92,6 @@ public class NoiseMap : MonoBehaviour
         float MinDiff = float.MaxValue;
         Biochemical MinBio = null;
         List<BiomeData> biomeDatas = new List<BiomeData>();
-        Debug.Log(x + "," + y + "::" + height + "," + moisture + "," + heat);
         foreach (var item in bios)
         {
             if (item.MatchCondition(height, moisture, heat))
