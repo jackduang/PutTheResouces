@@ -12,15 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40b4a9dfa8df5b449d279d3c9ffc42f, type: 3}
   m_Name: Surr_Jungle
   m_EditorClassIdentifier: Assembly-CSharp::Biochemical
-  tiles:
-  - {fileID: 6516339936024102044, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  - {fileID: -3542560172050478871, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  - {fileID: -703004740943097124, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  - {fileID: -6308281910836589827, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
+  spr:
   - {fileID: -4142044005333052766, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
   - {fileID: -6185616116156660104, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
   - {fileID: -3075336733007190102, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
   - {fileID: 2096985570961731948, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  minHeight: 0.4
-  minMoisture: 0.6
-  minHeat: 0.5
+  tile: {fileID: 0}
+  minHeight: 0.6
+  minMoisture: 0
+  minHeat: 0

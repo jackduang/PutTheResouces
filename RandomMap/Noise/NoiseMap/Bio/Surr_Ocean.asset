@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40b4a9dfa8df5b449d279d3c9ffc42f, type: 3}
   m_Name: Surr_Ocean
   m_EditorClassIdentifier: Assembly-CSharp::Biochemical
-  tiles:
-  - {fileID: 5706479173313259257, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  minHeight: -1
-  minMoisture: -1
-  minHeat: -1
+  spr: []
+  tile: {fileID: 11400000, guid: ee8ac603ec46cd541882d938047e5940, type: 2}
+  minHeight: -999
+  minMoisture: -999
+  minHeat: -999

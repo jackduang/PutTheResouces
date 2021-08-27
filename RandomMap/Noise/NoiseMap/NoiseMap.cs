@@ -8,7 +8,7 @@ public class NoiseMap : MonoBehaviour
 {
     public Biochemical[] bios;
 
-    public int MapW = 50,MapH = 50;
+    public int MapW = 50, MapH = 50;
     public float scale = 1f;
     public Vector2 offset;
     public Tilemap tileMap;
@@ -22,11 +22,11 @@ public class NoiseMap : MonoBehaviour
     [Header("Heat Map")]
     public Wave[] heatWaves;
     private float[,] heatMap;
-    Tile tile;
+    public Tile tile;
     // Start is called before the first frame update
     private void Awake()
     {
-        
+
     }
     void Start()
     {
@@ -37,9 +37,8 @@ public class NoiseMap : MonoBehaviour
     void GenerateMap()
     {
         tileMap.ClearAllTiles();
-        tile = (Tile)Resources.Load<TileBase>("Tile");
         // height map
-        heightMap = NoiseGenerate.Generate(MapW, MapH, scale,offset,heightWaves);
+        heightMap = NoiseGenerate.Generate(MapW, MapH, scale, offset, heightWaves);
         // moisture map
         moistureMap = NoiseGenerate.Generate(MapW, MapH, scale, offset, moistureWaves);
         // heat map
@@ -50,13 +49,34 @@ public class NoiseMap : MonoBehaviour
             {
                 // GameObject tile = Instantiate(tilePre, new Vector3(x, y, 0), Quaternion.identity,transform);
                 Vector3Int tilepos = tileMap.WorldToCell(new Vector3Int(x, y, 1));
-                
-                Sprite spr = GetBiome(heightMap[x, y], moistureMap[x, y], heatMap[x, y]).GetTleSprite();
-                tile.sprite = spr;
-                tileMap.SetTile(tilepos, tile);
-                
+                //Vector3Int[] poss = K_utility.GetRoundPos(new Vector3Int(x, y, 1));
+                if (x == 9 && y == 43)
+                {
+                    print("here");
+
+                }
+                Biochemical bim = GetBiome(heightMap[x, y], moistureMap[x, y], heatMap[x, y], x, y);
+                if (bim.tile == null)
+                {
+                    Sprite spr = bim.GetTleSprite();
+                    tile.sprite = spr;
+                    tileMap.SetTile(tilepos, tile);
+                }
+                else
+                {
+                      tileMap.SetTile(tilepos, bim.tile);
+                }
+
+
+
+
             }
         }
+    }
+
+    public void OrderedTile()
+    {
+
     }
 
     [Button("CleanMap")]
@@ -65,13 +85,13 @@ public class NoiseMap : MonoBehaviour
         tileMap.ClearAllTiles();
     }
 
-    //¾ö¶¨Éú³ÉÄÄ¸öÈºÂä
-    Biochemical GetBiome(float height, float moisture, float heat)
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¸ï¿½Èºï¿½ï¿½
+    Biochemical GetBiome(float height, float moisture, float heat, int x, int y)
     {
+
         float MinDiff = float.MaxValue;
         Biochemical MinBio = null;
         List<BiomeData> biomeDatas = new List<BiomeData>();
-        Debug.Log(height + "," + moisture + "," + heat);
         foreach (var item in bios)
         {
             if (item.MatchCondition(height, moisture, heat))
@@ -92,6 +112,7 @@ public class NoiseMap : MonoBehaviour
         {
             return MinBio;
         }
+        print("Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Èºï¿½ï¿½");
         return null;
     }
 }
@@ -105,7 +126,7 @@ public class BiomeData
     }
 
     /// <summary>
-    /// ÈºÂäÓëÓëµ±Ç°»·¾³´æÔÚµÄ×îÐ¡²îÒìÖµ
+    /// Èºï¿½ï¿½ï¿½ï¿½ï¿½ëµ±Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½Öµ
     /// </summary>
     /// <param name="height"></param>
     /// <param name="moisture"></param>

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b40b4a9dfa8df5b449d279d3c9ffc42f, type: 3}
   m_Name: Surr_Mountains
   m_EditorClassIdentifier: Assembly-CSharp::Biochemical
-  tiles:
-  - {fileID: -4923069605471930372, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  - {fileID: -6186236853307557579, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
-  minHeight: 0.55
+  spr:
+  - {fileID: 7401643170403359469, guid: 5007d93a4a1e55c41b978290d34987bb, type: 3}
+  tile: {fileID: 0}
+  minHeight: 0.9
   minMoisture: 0
   minHeat: 0
