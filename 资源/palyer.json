@@ -1,0 +1,50 @@
+{ "frames": {
+   "palyer (idel) 0.aseprite": {
+    "frame": { "x": 0, "y": 0, "w": 9, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 5, "w": 9, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   "palyer (idel) 1.aseprite": {
+    "frame": { "x": 41, "y": 0, "w": 9, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 5, "w": 9, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   "palyer (idel) 2.aseprite": {
+    "frame": { "x": 82, "y": 0, "w": 9, "h": 21 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 5, "w": 9, "h": 21 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   },
+   "palyer (idel) 3.aseprite": {
+    "frame": { "x": 123, "y": 0, "w": 9, "h": 20 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 9, "y": 6, "w": 9, "h": 20 },
+    "sourceSize": { "w": 32, "h": 32 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2.8-x64",
+  "image": "D:\\GitProject\\PutTheResouces\\资源\\palyerider.png",
+  "format": "RGBA8888",
+  "size": { "w": 480, "h": 32 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "idel", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
